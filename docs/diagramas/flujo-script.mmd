@@ -1,0 +1,14 @@
+flowchart TD
+    A([Inicio]) --> B[Pedir credenciales con getpass]
+    B --> C[Conectar por SSH con Netmiko a R y SW]
+    C --> D["Recolectar: show running-config, show ip ssh,<br/>show cdp, show logging, show crypto key"]
+    D --> E[Evaluar 41 reglas CIS<br/>CUMPLE / NO CUMPLE / EXCEPCION / N/A]
+    E --> F[Guardar running-config<br/>e imprimir estado]
+    F --> G{Modo}
+    G -->|--auditar| H[Informe HTML de auditoría<br/>sin aplicar ninguna regla]
+    G -->|--aplicar| I[Generar comandos solo<br/>para reglas que fallan]
+    I --> J[Aplicar en modo config<br/>responder confirm / yes-no]
+    J --> K[write memory]
+    K --> L[Reconectar con las<br/>credenciales nuevas]
+    L --> M[Auditar de nuevo]
+    M --> N[Running-config posterior +<br/>informe HTML previo y posterior]

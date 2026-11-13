@@ -1,0 +1,22 @@
+flowchart TB
+    NAT(["Cloud0 · NAT VMware<br/>192.168.128.0/24"])
+    FW["<b>FW</b> · FortiGate VM 7.0.3<br/>port1 WAN (DHCP) · NAT<br/>port2 10.24.56.129/30<br/>Políticas · gestión solo VLAN 99"]
+    R["<b>R</b> · Cisco IOL 15.4(2)T4<br/>e0/0 10.24.56.130/30<br/>e0/1.10 10.24.56.1/26<br/>e0/1.99 10.24.56.65/28<br/>Servidor DHCP VLAN 10"]
+    SW["<b>SW</b> · Cisco IOL L2<br/>VLAN 10 · 99 · 999<br/>SVI Vlan99 10.24.56.66/28"]
+    KALI["<b>PC-Kali</b> · VLAN 99<br/>10.24.56.70/28<br/>Gestión · script · Syslog"]
+    USR["<b>PC-Usuarios</b> · VLAN 10<br/>Ubuntu · DHCP 10.24.56.10<br/>Usuario no autorizado"]
+    VPC["<b>VPC</b> · VLAN 10<br/>DHCP"]
+    NAT ---|"port1"| FW
+    FW ---|"port2 ↔ e0/0 · tránsito 10.24.56.128/30"| R
+    R ---|"e0/1 ↔ e0/0 · Trunk 802.1Q<br/>VLAN 10,99 · nativa 999"| SW
+    SW ---|"e0/2 · access 99"| KALI
+    SW ---|"e0/1 · access 10"| USR
+    SW ---|"e0/3 · access 10"| VPC
+    classDef fw fill:#eeedfe,stroke:#534ab7,color:#26215c
+    classDef gestion fill:#d9f2ea,stroke:#0f6e56,color:#04342c
+    classDef usuarios fill:#fbe3da,stroke:#993c1d,color:#4a1b0c
+    classDef red fill:#e6eefb,stroke:#185fa5,color:#042c53
+    class FW fw
+    class KALI gestion
+    class USR,VPC usuarios
+    class R,SW red

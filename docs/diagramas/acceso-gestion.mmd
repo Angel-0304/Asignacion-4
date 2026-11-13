@@ -1,0 +1,28 @@
+flowchart LR
+    EXT["Internet / red externa<br/>192.168.128.0/24"]
+    U["PC-Usuarios<br/>10.24.56.10 (VLAN 10)"]
+    K["PC-Kali<br/>10.24.56.70 (VLAN 99)"]
+    subgraph FWB["FortiGate"]
+      WAN{"port1 sin allowaccess<br/>sin políticas de entrada"}
+      POL{"Política LAN-a-Internet<br/>HTTP · HTTPS · DNS · ICMP · NTP"}
+      TH{"Admin con trusted host<br/>10.24.56.64/28"}
+    end
+    subgraph EQ["R y SW"]
+      ACL{"access-class GESTION-VTY<br/>permit 10.24.56.64/28"}
+      SNMP{"SNMP-GESTION<br/>permit 10.24.56.70"}
+    end
+    LOG[("Syslog en Kali<br/>/var/log/cisco.log")]
+    EXT -. "HTTPS / SSH / ping: sin respuesta" .-> WAN
+    U -- "web: permitido" --> POL
+    U -. "8080: deny" .-> POL
+    U -. "SSH al FW: rechazado" .-> TH
+    U -. "SSH / Telnet / SNMP: rechazado" .-> ACL
+    K -- "SSH" --> ACL
+    K -- "SSH" --> TH
+    K -- "SNMP ITLA-CIS-2356" --> SNMP
+    POL -. "logs (accept / deny)" .-> LOG
+    ACL -. "%SEC-6-IPACCESSLOGNP" .-> LOG
+    classDef ok fill:#d9f2ea,stroke:#0f6e56,color:#04342c
+    classDef bad fill:#fbe3da,stroke:#993c1d,color:#4a1b0c
+    class K ok
+    class U,EXT bad
